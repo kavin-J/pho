@@ -83,5 +83,12 @@ public interface DataStoreApi {
      * @return					updated entity.
      */
     <T> T save(T entity, List<String> selectedFields);
-    
+
+    /**
+     * Count the resultset for query.
+     * @param query
+     * @param <T>
+     * @return value of count result
+     */
+    <T> long count(QuerySelect<T, Long> query);
 }

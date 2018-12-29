@@ -57,6 +57,7 @@ public class PhoenixHBaseQueryTranslator extends AbstractQueryTranslator<String,
     private final MorphiaEntityResolver entityResolver = new MorphiaEntityResolver();
     private EntityPropertiesResolver entityPropertiesResolver;
     private static final String PROJECTION_ALL = "*";
+    private static final String JOINER_SPACE = " ";
     private static final String SELECT = "SELECT";
     private static final String STRING_OPERAND_WITH_WILDCARD = "%%%s%%";
 
@@ -86,12 +87,44 @@ public class PhoenixHBaseQueryTranslator extends AbstractQueryTranslator<String,
         return translateSelectQuery(query);
     }
 
+    /**
+     * 将查询sql转换成统计sql
+     *      这样做是为了重复利用已拼接的sql
+     * 如： {@code SELECT * FROM XXX WHERE XXX LIMIT xxx => SELECT COUNT(*) FROM XXX WHERE XXX}
+     * @param query
+     * @param <T>
+     * @param <R>
+     * @return
+     */
+    public <T, R> String translateCount(QuerySelect<T, R> query) {
+        String queryStr = translateSelectQuery(query);
+        /**
+         * 这样处理之后，字段中不允许有 FROM 、 LIMIT 字段
+         */
+        String[] splitSql = queryStr.split(JOINER_SPACE + PhoenixHBaseClauses.FROM.symbol() + JOINER_SPACE);
+        if (splitSql.length > 1) {
+            String afterFromSql = splitSql[1];
+            String beforeLimitSql = null;
+            if (afterFromSql.contains(PhoenixHBaseClauses.LIMIT.symbol())) {
+                beforeLimitSql = afterFromSql.substring(0, afterFromSql.lastIndexOf(PhoenixHBaseClauses.LIMIT.symbol()));
+            } else {
+                beforeLimitSql = afterFromSql;
+            }
+            queryStr = Joiner.on(JOINER_SPACE).join(SELECT, countAll(), PhoenixHBaseClauses.FROM.symbol(), beforeLimitSql);
+        } else {
+            logger.error("no FROM in sql while building count sql :{}" , queryStr);
+            throw new DataStoreException(queryStr);
+        }
+        return queryStr;
+    }
+
     private <T, R> String translateSelectQuery(QuerySelect<T, R> query) {
         List<String> fields = query.getReturnFields();
         Criterion rootCriterion = query.getCriteria();
         Criterion groupCriterion = query.getGroupCriteria();
         Orderings orders = query.getOrder();
         Integer maxResults = query.getMaxResults();
+        Integer offsetRows = query.getOffsetRows();
         Class<T> entityClass = query.getEntityClass();
         Joiner spaceJoiner = Joiner.on(" ");
 
@@ -132,6 +165,11 @@ public class PhoenixHBaseQueryTranslator extends AbstractQueryTranslator<String,
         if (maxResults != null && maxResults > 0) {
             queryString = spaceJoiner.join(queryString, PhoenixHBaseClauses.LIMIT.symbol(), maxResults);
         }
+
+        if (offsetRows != null && offsetRows > 0) {
+            queryString = spaceJoiner.join(queryString, PhoenixHBaseClauses.OFFSET.symbol(), offsetRows);
+        }
+
         if (projections != null && CollectionUtils.isNotEmpty(projections)) {
             for (Projection p : projections) {
                 if (p instanceof GroupProjection) {
@@ -443,6 +481,14 @@ public class PhoenixHBaseQueryTranslator extends AbstractQueryTranslator<String,
         }
         return "";
 
+    }
+
+    @Override
+    public String offset(Integer value) {
+        if (value != null && value > 0) {
+            return "OFFSET " + value;
+        }
+        return "";
     }
 
     @Override

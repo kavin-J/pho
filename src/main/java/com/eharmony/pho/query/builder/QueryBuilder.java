@@ -27,6 +27,7 @@ public class QueryBuilder<T, R> {
     private Orderings orderings = new Orderings();
     private List<Projection> projections = new ArrayList<>();
     private Integer maxResults;
+    private Integer offsetRows;
     private List<String> returnFields = Collections.emptyList();
     private QueryOperationType queryOperationType;
     private String queryHint;
@@ -133,6 +134,11 @@ public class QueryBuilder<T, R> {
         return this;
     }
 
+    public QueryBuilder<T, R> setOffsetRows(int offsetRows) {
+        this.offsetRows = offsetRows;
+        return this;
+    }
+
     public QueryBuilder<T, R> setQueryOperationType(QueryOperationType queryOperationType) {
         this.queryOperationType = queryOperationType;
         return this;
@@ -147,8 +153,8 @@ public class QueryBuilder<T, R> {
         // if criteria.size == 0, rootCriterion = null
         Criterion rootCriterion = bindCriterion(this.criteria);
         Criterion groupCriterion = bindCriterion(this.groupCriteria);
-        return new QuerySelectImpl<T, R>(entityClass, returnType, rootCriterion, groupCriterion, orderings, maxResults, returnFields,
-                projections, queryOperationType, queryHint);
+        return new QuerySelectImpl<T, R>(entityClass, returnType, rootCriterion, groupCriterion, orderings, maxResults, offsetRows,
+                returnFields, projections, queryOperationType, queryHint);
     }
 
     private Criterion bindCriterion(List<Criterion> criteria) {
@@ -164,7 +170,7 @@ public class QueryBuilder<T, R> {
     @Override
     public String toString() {
         return "QueryBuilder [entityClass=" + entityClass + ", criteria=" + criteria + ", orderings=" + orderings
-                + ", maxResults=" + maxResults + "]";
+                + ", maxResults=" + maxResults + ", offsetRows=" + offsetRows + "]";
     }
 
 }

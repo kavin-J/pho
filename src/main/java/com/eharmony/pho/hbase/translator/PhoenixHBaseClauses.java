@@ -10,7 +10,8 @@ public enum PhoenixHBaseClauses implements Symbolic {
     WHERE("WHERE"),
     HAVING("HAVING"),
     ORDER_BY("ORDER BY"),
-    LIMIT("LIMIT");
+    LIMIT("LIMIT"),
+    OFFSET("OFFSET");
 
     private final String symbol;
 

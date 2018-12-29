@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.eharmony.pho.hbase.translator.PhoenixHBaseClauses;
+import com.google.common.base.Joiner;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +75,38 @@ public class PhoenixHBaseQueryExecutor {
                 statement.close();
             }
         }
+    }
+
+    public <T> long count(QuerySelect<T, Long> query, Connection conn) throws SQLException {
+        ResultSet resultSet = null;
+        Statement statement = null;
+        // value of count(1)
+        long count = 0;
+
+        try {
+            String queryStr = queryTranslator.translateCount(query);
+            if (showSQL) {
+                log.info("Query String: {}", queryStr);
+            }
+            statement = createStatement(conn);
+            resultSet = statement.executeQuery(queryStr);
+            Iterable<Long> resultRows = resultMapper.mapResults(resultSet, Long.class);
+            if (resultRows != null && resultRows.iterator().hasNext()) {
+                count = resultRows.iterator().next();
+            } else {
+                throw new DataStoreException("Count Failed for query...");
+            }
+        } catch (final Exception hx) {
+            throw new DataStoreException(hx.getMessage(), hx);
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+            if (statement != null) {
+                statement.close();
+            }
+        }
+        return count;
     }
 
     private void closeStatementSafe(PreparedStatement ps) {

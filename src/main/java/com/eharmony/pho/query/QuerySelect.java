@@ -66,6 +66,12 @@ public interface QuerySelect<T, R> {
     public Integer getMaxResults();
 
     /**
+     * get the skiped rows.
+     * @return
+     */
+    public Integer getOffsetRows();
+
+    /**
      * Getter method for Query Operation type
      * 
      * @return <code>QueryOperationType</code> 

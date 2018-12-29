@@ -472,6 +472,13 @@ public abstract class AbstractQueryTranslator<Q, O, P> implements QueryTranslato
      */
     public abstract Q limit(Integer value);
 
+    /**
+     * Translate a "offset expression" expression
+     * @param value Integer number of row to skip
+     * @return Q
+     */
+    public abstract Q offset(Integer value);
+
     public abstract Q groupBy(String... fieldNames);
 
     public abstract P count(String fieldName);

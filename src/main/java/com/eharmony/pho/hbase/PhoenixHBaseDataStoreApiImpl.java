@@ -157,6 +157,19 @@ public class PhoenixHBaseDataStoreApiImpl implements DataStoreApi {
 		} finally {
 			closeConnectionSafe(conn);
 		}
-}
+    }
 
+
+    @Override
+    public <T> long count(QuerySelect<T, Long> query) {
+        Connection conn = null;
+        try {
+            conn = PhoenixConnectionManager.getConnection(connectionUrl);
+            return queryExecutor.count(query, conn);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            closeConnectionSafe(conn);
+        }
+    }
 }

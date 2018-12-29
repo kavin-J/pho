@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.eharmony.pho.hbase.model.CarCan;
 import com.eharmony.pho.query.criterion.GroupRestrictions;
 import com.eharmony.pho.query.criterion.Projections;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +37,7 @@ public class PhoenixHBaseQueryTranslatorTest {
         final List<String> classesList = new ArrayList<String>();
         classesList.add("com.eharmony.pho.hbase.model.TranslationTestClass");
         classesList.add("com.eharmony.pho.hbase.model.EmbededEntityExample");
+        classesList.add("com.eharmony.pho.hbase.model.CarCan");
         EntityPropertiesMappingContext context = new EntityPropertiesMappingContext(classesList);
         entityPropertiesResolver = new EntityPropertiesResolver(context);
     }
@@ -416,6 +418,49 @@ public class PhoenixHBaseQueryTranslatorTest {
         String result = translator.countAll();
         Assert.assertNotNull(result);
         Assert.assertEquals("COUNT(*)", result);
+
+        QuerySelect<CarCan, CarCan> query = QueryBuilder.builderFor(CarCan.class)
+                .select()
+                .addProjection(Projections.count("*"))
+                .build();
+        String queryStr = translator.translate(query);
+        System.out.println(queryStr);
+
+        String expected = "SELECT count(*) FROM PHOENIX_CAR_CAN_HISTORY_NOR_V1";
+    }
+
+
+    @Test
+    public void testOffset() {
+        PhoenixHBaseQueryTranslator translator = new PhoenixHBaseQueryTranslator(entityPropertiesResolver);
+        QuerySelect<CarCan, CarCan> query = QueryBuilder.builderFor(CarCan.class)
+                .select()
+                .add(Restrictions.eq("vin", "Abdareb"))
+                .add(Restrictions.eq("teNumber", "123"))
+                .setMaxResults(10)
+                .setOffsetRows(1)
+                .build();
+        String queryStr = translator.translate(query);
+        System.out.println(queryStr);
+
+        String expected = "SELECT * FROM PHOENIX_CAR_CAN_HISTORY_NOR_V1 LIMIT 10 OFFSET 1";
+        Assert.assertEquals(expected, queryStr);
+    }
+
+    @Test
+    public void testTranslateCount() throws ClassNotFoundException {
+        PhoenixHBaseQueryTranslator translator = new PhoenixHBaseQueryTranslator(entityPropertiesResolver);
+        QuerySelect<TranslationTestClass, TranslationTestClass> query = QueryBuilder
+                .builderFor(TranslationTestClass.class)
+                .select()
+                .add(Restrictions.eq("userId", 2))
+                .add(Restrictions.eq("pwd", "123"))
+                .setMaxResults(10)
+                .build();
+        String queryStr = translator.translateCount(query);
+        System.out.println(queryStr);
+        Assert.assertTrue(StringUtils.equals(queryStr, "SELECT COUNT(*) FROM user WHERE (uid = 2) AND (pwd = '123') "));
+
     }
 
     private TranslationTestClass buildTestClassObjectA() {

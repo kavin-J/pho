@@ -3,6 +3,7 @@ package com.eharmony.pho.hbase.mapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.eharmony.pho.hbase.model.CarCan;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,6 +31,16 @@ public class EntityPropertiesResolverTest {
         EntityPropertiesMappingContext mappingContext = new EntityPropertiesMappingContext(entityClassNames);
         EntityPropertiesResolver resolver = new EntityPropertiesResolver(mappingContext);
         EntityPropertyBinding propBinding = resolver.resolveEntityPropertyBindingByStoreMappingName("annotatedProperty",EmbededEntityExample.class);
+        Assert.assertNotNull(propBinding);
+    }
+
+    @Test
+    public void testMapToEntityPropertiesForCarCan() throws ClassNotFoundException {
+        List<String> entityClassNames = new ArrayList<String>();
+        entityClassNames.add("com.eharmony.pho.hbase.model.CarCan");
+        EntityPropertiesMappingContext mappingContext = new EntityPropertiesMappingContext(entityClassNames);
+        EntityPropertiesResolver resolver = new EntityPropertiesResolver(mappingContext);
+        EntityPropertyBinding propBinding = resolver.resolveEntityPropertyBindingByStoreMappingName("vin", CarCan.class);
         Assert.assertNotNull(propBinding);
     }
 }

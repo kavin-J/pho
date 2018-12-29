@@ -6,7 +6,7 @@ import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Property;
 
 @Entity(value="user")
-public class TranslationTestClass {
+public class TranslationTestClass extends BaseClass{
 
     @Property(value="user_name")
     private String name;
@@ -14,8 +14,7 @@ public class TranslationTestClass {
     @Property(value="uid")
     private int userId;
     
-    @Property(value="created_date")
-    private Date createdAt;
+
     
     @Property(value="pwd")
     private String password;
@@ -32,12 +31,7 @@ public class TranslationTestClass {
     public void setUserId(int userId) {
         this.userId = userId;
     }
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
+
     public String getPassword() {
         return password;
     }

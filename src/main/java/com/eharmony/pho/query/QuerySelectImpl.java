@@ -23,13 +23,14 @@ public class QuerySelectImpl<T, R> implements QuerySelect<T, R> {
     private final Criterion groupCriterion;
     private final Orderings orderings;
     private final Integer maxResults;
+    private final Integer offsetRows;
     private final List<String> returnFields;
     private final List<Projection> projections;
     private final QueryOperationType queryOperationType;
     private final String queryHint;
 
     public QuerySelectImpl(Class<T> entityClass, Class<R> returnType, Criterion criteria, Criterion groupCriterion, Orderings orderings,
-                           Integer maxResults, List<String> returnFields, List<Projection> projections, QueryOperationType queryOperationType, String queryHint) {
+                           Integer maxResults, Integer offsetRows, List<String> returnFields, List<Projection> projections, QueryOperationType queryOperationType, String queryHint) {
         this.entityClass = entityClass;
         this.returnType = returnType;
         this.criteria = criteria;
@@ -37,6 +38,7 @@ public class QuerySelectImpl<T, R> implements QuerySelect<T, R> {
         this.returnFields = returnFields;
         this.orderings = orderings;
         this.maxResults = maxResults;
+        this.offsetRows = offsetRows;
         this.projections = projections;
         this.queryOperationType = queryOperationType;
         this.queryHint = queryHint;
@@ -122,6 +124,11 @@ public class QuerySelectImpl<T, R> implements QuerySelect<T, R> {
         return maxResults;
     }
 
+    @Override
+    public Integer getOffsetRows() {
+        return offsetRows;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -130,6 +137,6 @@ public class QuerySelectImpl<T, R> implements QuerySelect<T, R> {
     @Override
     public String toString() {
         return "QueryImpl [entityClass=" + entityClass + ", criteria=" + criteria + ", orderings=" + orderings
-                + ", maxResults=" + maxResults + "]";
+                + ", maxResults=" + maxResults + ", offsetRows=" + offsetRows + "]";
     }
 }
